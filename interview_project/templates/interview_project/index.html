@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+	<meta charset="utf-8">
+	<meta http-equiv="X-UA-Compatible" content="IE=edge">
+	<meta name="viewport" content="width=device-width, initial-scale=1">
+	<title>Educatrium</title>
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap.min.css" >
+	<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/css/bootstrap-theme.min.css" >
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/react/0.14.3/react-dom.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/babel-core/5.8.23/browser.min.js"></script>
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+	<style>
+		div.well {
+		    margin-top: 33px;
+		    margin-bottom: 33px;
+		}
+		div.element {
+		    margin-top: 17px;
+		    margin-bottom: 17px;
+		}
+		p {
+		    word-wrap: break-word;
+		}
+	</style>
+  </head>
+  <body>
+
+	{% if divs %}
+		<div id="elements" class="elements col-md-4 col-md-offset-4"></div>
+		<div class="popups col-md-4 col-md-offset-1"></div>
+	{% else %}
+		<p>Nothing available.</p>
+	{% endif %}
+
+	<script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.6/js/bootstrap.min.js" ></script>
+
+	<script type="text/babel">
+
+		var Popup = React.createClass({
+			render: function() {
+				return (
+					<div className="well well-sm"><h3 className="text-center">{ this.props.data.random_popup_title }</h3><p>{ this.props.data.random_popup_text }</p></div>
+				);
+			}
+		});
+
+		var Element = React.createClass({
+			onElementClick: function(evt) {
+				$(".elements").removeClass("col-md-offset-4").addClass("col-md-offset-1");
+				var element_id = this.props.element_id;
+				$.get( "/interview_project/get_element/"+this.props.element_id, function( data ) {					
+					data = JSON.parse(data);
+					$(".popups").append('<div id="popup'+element_id+'"></div>');
+					var toFind = 'popup'+element_id;
+					ReactDOM.render(
+					  <Popup data={data} />,
+					  document.getElementById(toFind)
+					);
+				});
+			},
+			render: function() {
+				var colorNum = Math.floor((Math.random() * 4) + 1);
+				var mappings = {1:'success',2:'danger',3:'warning',4:'info'};
+				var color = 'list-group-item list-group-item-'+mappings[colorNum]+' text-center';
+				return (
+					<a onClick={this.onElementClick} className="element" id={ this.props.element_id }><div className="element"><div className={color}>{ this.props.random_header }</div><div className="list-group-item text-center">{ this.props.random_text }</div></div></a>
+				);
+			}
+		});
+
+		var ElementGroup = React.createClass({
+		  render: function() {
+			return (
+				<div>
+					{% for d in divs %}
+						<Element element_id='{{d.element_id}}' random_header='{{d.random_header}}' random_text='{{d.random_text}}' />
+					{% endfor %}
+				</div>
+			);
+		  }
+		});
+
+		ReactDOM.render(
+		  <ElementGroup />,
+		  document.getElementById('elements')
+		);
+	</script>
+
+  </body>
+</html>
